@@ -66,16 +66,24 @@ ORDER BY ic.Category, MONTH(ss.Transaction_Date), YEAR(ss.Transaction_Date);
 -- Question 5: Can you provide a ranking of in-store sales performance by each store in the sales territory, or a ranking of online sales performance by state within an online sales territory?
 SELECT SUM(ss.Sale_Amount) AS 'Sales Performance',
         RANK() OVER(ORDER BY SUM(ss.Sale_Amount) DESC) AS 'Rank',
-        stl.City,
-        sm.State
-FROM store_list stl
-JOIN store_managers sm ON sm.State = stl.State
-JOIN store_sales ss ON ss.Store_ID = stl.Store_ID
-WHERE sm.State = 'New Jersey'
-GROUP BY stl.City
-ORDER BY SUM(ss.Sale_Amount);
+        sl.State,
+        sm.Region
+FROM store_managers sm 
+JOIN store_locations sl ON sl.State = sm.State
+JOIN store_sales ss ON ss.Store_ID = sl.StoreId
+WHERE sm.Region = 'Northeast'
+GROUP BY sm.State
+ORDER BY 1 DESC;
 
-
+SELECT SUM(os.SalesTotal) AS 'Online Sales Performance',
+		RANK() OVER(ORDER BY SUM(os.SalesTotal) DESC) AS 'Rank',
+        os.ShiptoState
+FROM store_managers sm
+JOIN online_sales os ON os.ShipToState = sm.State
+JOIN store_locations sl ON sl.State = sm.State
+WHERE sm.Region = 'Northeast'
+GROUP BY os.ShiptoState
+ORDER BY 1 DESC;
 
 -- The stores ranked by sales performance are Maryland, which comes at #1 in the ranking, followed by Massachusetts, New Jersey, and finally Maine being the lowest performing state. 
 
